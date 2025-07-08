@@ -78,4 +78,6 @@ echo "✅ 可通过 Windows 网络访问 /root/OpenClashManage/wangluo 管理节
 echo "✅ jk.sh 守护已启动并实现自动同步监控"
 echo "✅ OpenClash 已配置开机自启，如需立即生效，请执行 reboot 重启软路由"
 
+rm -- "$0"   # 删除当前脚本自身
+
 exit 0
