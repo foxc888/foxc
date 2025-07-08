@@ -1,55 +1,81 @@
 #!/bin/bash
 
-# =====================================
-# 🪐 OpenClash 自动管理一键初始化脚本
-# =====================================
+# ============================================
+# 🪐 OpenClash 自动管理一键部署初始化脚本
+# foxc 项目定制版（避免执行中断，自动容错）
+# ============================================
 
-echo "🪐 开始更新软件源并安装依赖..."
-opkg update
-opkg install python3 python3-pip inotifywait wget unzip kmod-fs-cifs ksmbd-server ksmbd-tools luci-app-ksmbd || true
+echo "🪐 开始执行 OpenClash 自动化部署..."
+
+# ============================================
+# 1️⃣ 替换 OpenWRT 软件源以避免依赖下载失败
+# ============================================
+echo "🌐 切换软件源到 USTC 镜像..."
+sed -i 's|http://downloads.openwrt.org|https://mirrors.ustc.edu.cn/openwrt|' /etc/opkg/distfeeds.conf
+opkg update || true
+
+# ============================================
+# 2️⃣ 安装依赖（容错防止卡死）
+# ============================================
+echo "🔧 安装 Python、pip、wget、unzip..."
+opkg install python3 python3-pip wget unzip || true
 pip3 install pyyaml || true
 
-echo "🌍 下载并解压 OpenClashManage..."
+echo "🔧 安装 ksmbd 以启用本地 SMB 文件映射..."
+opkg install kmod-fs-cifs ksmbd-server ksmbd-tools luci-app-ksmbd || true
+
+# ============================================
+# 3️⃣ 下载并解压 OpenClashManage
+# ============================================
+echo "📦 下载并解压 OpenClashManage..."
 cd /root
-wget -O OpenClashManage.rar "https://github.com/foxc888/foxc/raw/refs/heads/main/OpenClashManage.rar"
-unzip -o OpenClashManage.rar
-rm OpenClashManage.rar
+wget -O OpenClashManage.rar "https://github.com/foxc888/foxc/raw/refs/heads/main/OpenClashManage.rar" || true
+unzip -o OpenClashManage.rar || unrar x OpenClashManage.rar || true
+rm -f OpenClashManage.rar
 
+# ============================================
+# 4️⃣ 设置执行权限
+# ============================================
 echo "🔐 设置执行权限..."
-chmod +x /root/OpenClashManage/jk.sh
-chmod +x /root/OpenClashManage/zr.py
+chmod +x /root/OpenClashManage/jk.sh || true
+chmod +x /root/OpenClashManage/zr.py || true
 
-# =============== SMB 挂载映射 ===============
+# ============================================
+# 5️⃣ 配置 SMB 挂载映射
+# ============================================
 echo "🖇️ 配置 SMB 挂载映射..."
-uci add ksmbd share
+uci add ksmbd share || true
 uci set ksmbd.@share[-1].name='OpenClashManage'
 uci set ksmbd.@share[-1].path='/root/OpenClashManage/wangluo'
 uci set ksmbd.@share[-1].read_only='no'
 uci set ksmbd.@share[-1].guest_ok='yes'
 uci commit ksmbd
-/etc/init.d/ksmbd restart
-/etc/init.d/ksmbd enable
+/etc/init.d/ksmbd restart || true
+/etc/init.d/ksmbd enable || true
 
-# =============== 权限及启动脚本 ===============
-echo "🛠️ 设置文件夹读写权限..."
-chmod -R 777 /root/OpenClashManage/wangluo
-
-# 配置 jk.sh 守护脚本开机自启
+# ============================================
+# 6️⃣ 设置 jk.sh 守护脚本开机自启并立即执行
+# ============================================
+echo "🛠️ 设置 jk.sh 守护脚本开机自启..."
+chmod -R 777 /root/OpenClashManage/wangluo || true
 if ! grep -q "OpenClashManage/jk.sh" /etc/rc.local; then
-    echo "🚀 写入 jk.sh 到 /etc/rc.local 实现开机自启..."
     sed -i '$i nohup bash /root/OpenClashManage/jk.sh &' /etc/rc.local
     chmod +x /etc/rc.local
 fi
-
-# 启动监控脚本
 nohup bash /root/OpenClashManage/jk.sh &
 
-# =============== OpenClash 开机自启 ===============
-echo "⚙️ 配置 OpenClash 开机自启..."
-/etc/init.d/openclash enable
+# ============================================
+# 7️⃣ 设置 OpenClash 开机自启
+# ============================================
+echo "⚙️ 设置 OpenClash 开机自启..."
+/etc/init.d/openclash enable || true
 
-# =============== 完成提示 ===============
+# ============================================
+# ✅ 完成提示
+# ============================================
 echo "✅ OpenClash 自动管理环境部署完成！"
-echo "✅ 已挂载 SMB，可在 Windows 网络中访问 /root/OpenClashManage/wangluo 管理节点文件"
-echo "✅ 已启动并配置 jk.sh 守护脚本实现自动同步监控"
-echo "✅ 如需重启生效，执行 reboot 即可"
+echo "✅ 可通过 Windows 网络访问 /root/OpenClashManage/wangluo 管理节点文件"
+echo "✅ jk.sh 守护已启动并实现自动同步监控"
+echo "✅ OpenClash 已配置开机自启，如需立即生效，请执行 reboot 重启软路由"
+
+exit 0
