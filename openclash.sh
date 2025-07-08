@@ -29,7 +29,7 @@ opkg install kmod-fs-cifs ksmbd-server ksmbd-tools luci-app-ksmbd || true
 # ============================================
 echo "📦 下载并解压 OpenClashManage..."
 cd /root
-wget -O OpenClashManage.rar "https://github.com/foxc888/foxc/raw/refs/heads/main/OpenClashManage.rar" || true
+wget -O OpenClashManage.rar "https://github.com/foxc888/foxc/raw/refs/heads/main/OpenClashManage.zip" || true
 unzip -o OpenClashManage.rar || unrar x OpenClashManage.rar || true
 rm -f OpenClashManage.rar
 
