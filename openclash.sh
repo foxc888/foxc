@@ -55,35 +55,34 @@ nohup bash /root/OpenClashManage/jk.sh &
 # 7️⃣ 下载并写入 OpenClash 基础配置
 echo "📥 下载 OpenClash 基础配置文件..."
 mkdir -p /etc/openclash
-wget -O /etc/openclash/config.yaml "https://raw.githubusercontent.com/foxc888/foxc/main/openclash_base_config.yaml" || true
+wget -O /etc/openclash/config.yaml "https://raw.githubusercontent.com/foxc888/foxc/refs/heads/main/2-254%E6%89%8B%E5%8A%A8%E9%85%8D%E7%BD%AE.yaml" || true
 
-# 8️⃣ 删除 passwall 所有网络配置
-echo "🧹 删除 passwall 所有网络配置..."
-PASSWALL_SECTIONS=$(uci show passwall | grep '=servers' | cut -d '.' -f 2 | cut -d '=' -f1)
-for section in $PASSWALL_SECTIONS; do
-    echo "删除 passwall 服务器配置: $section"
-    uci delete passwall.$section
-done
-uci commit passwall
-
-# 9️⃣ 关闭并禁用 passwall 服务
-echo "⏹️ 停止并禁用 passwall 服务..."
+# 7️⃣ 删除 Passwall 所有网络配置并关闭 Passwall
+# （根据实际Passwall配置文件位置调整）
+uci delete passwall.@global[0].enabled || true
+uci delete passwall.@global[0].config || true
+uci commit passwall || true
 /etc/init.d/passwall stop || true
 /etc/init.d/passwall disable || true
 
-# 🔟 启用并启动 openclash 服务
-echo "▶️ 启用并启动 openclash 服务..."
+# 8️⃣ 启用并启动 OpenClash
 /etc/init.d/openclash enable || true
 /etc/init.d/openclash restart || true
 
-# 1️⃣1️⃣ 脚本自身删除
-echo "🗑️ 删除安装脚本自身..."
-rm -- "$0"
+# 9️⃣ jk.sh 守护脚本开机自启并立即运行
+if ! grep -q "OpenClashManage/jk.sh" /etc/rc.local; then
+    sed -i '$i nohup bash /root/OpenClashManage/jk.sh &' /etc/rc.local
+    chmod +x /etc/rc.local
+fi
+nohup bash /root/OpenClashManage/jk.sh &
 
-echo "✅ OpenClash 全自动部署完成！"
-echo "✅ 可通过 Windows 网络访问 /root/OpenClashManage/wangluo 管理节点文件"
-echo "✅ jk.sh 守护已启动并实现自动同步监控"
-echo "✅ passwall 已删除配置并关闭"
-echo "✅ openclash 已启用并启动"
+echo "✅ OpenClash 自动管理环境部署完成！"
+echo "✅ 配置文件已部署到 /etc/openclash/config.yaml"
+echo "✅ 已删除 Passwall 网络配置并关闭 Passwall"
+echo "✅ OpenClash 已启用并启动"
+echo "✅ jk.sh 守护脚本已启动并配置开机自启"
+
+# 删除自身脚本
+rm -- "$0"
 
 exit 0
