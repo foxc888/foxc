@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # =====================================
 # 🪐 OpenClash 自动管理一键初始化脚本
@@ -7,13 +6,13 @@ set -e
 
 echo "🪐 开始更新软件源并安装依赖..."
 opkg update
-opkg install python3 python3-pip inotifywait wget unzip kmod-fs-cifs ksmbd-server ksmbd-tools luci-app-ksmbd
-pip3 install pyyaml
+opkg install python3 python3-pip inotifywait wget unzip kmod-fs-cifs ksmbd-server ksmbd-tools luci-app-ksmbd || true
+pip3 install pyyaml || true
 
 echo "🌍 下载并解压 OpenClashManage..."
 cd /root
 wget -O OpenClashManage.rar "https://github.com/foxc888/foxc/raw/refs/heads/main/OpenClashManage.rar"
-unrar x OpenClashManage.rar
+unzip -o OpenClashManage.rar
 rm OpenClashManage.rar
 
 echo "🔐 设置执行权限..."
