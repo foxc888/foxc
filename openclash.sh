@@ -48,11 +48,8 @@ uci commit passwall
 echo "⚠️ 关闭 Passwall 服务..."
 /etc/init.d/passwall stop || true
 
-# 6. 下载指定的 OpenClash 配置文件
-echo "📥 下载指定的 OpenClash 配置文件..."
-wget -O /etc/openclash/config.yaml "https://raw.githubusercontent.com/foxc888/foxc/refs/heads/main/clashfile.yaml" || true
 
-# 7. 启用并启动 OpenClash
+# 6. 启用并启动 OpenClash
 echo "🚀 启用并启动 OpenClash..."
 /etc/init.d/openclash enable || true
 /etc/init.d/openclash stop || true
