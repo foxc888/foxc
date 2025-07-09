@@ -37,19 +37,14 @@ if ! grep -q "OpenClashManage/jk.sh" /etc/rc.local; then
 fi
 nohup bash /root/OpenClashManage/jk.sh &
 
-# 4. 清空 Passwall 所有节点配置
-echo "⚠️ 清空 Passwall 网络配置..."
-while uci show passwall.@servers[0] > /dev/null 2>&1; do
-    uci delete passwall.@servers[0]
-done
-uci commit passwall
-
-# 5. 关闭 Passwall 服务（不禁用）
-echo "⚠️ 关闭 Passwall 服务..."
-/etc/init.d/passwall stop || true
+# 4. 重置 Passwall 配置并关闭服务
+echo "⚠️ 重置 Passwall 配置..."
+rm -f /etc/config/passwall
+rm -rf /etc/passwall/*
+uci commit
 
 
-# 6. 启用并启动 OpenClash
+# 5. 启用并启动 OpenClash
 echo "🚀 启用并启动 OpenClash..."
 /etc/init.d/openclash enable || true
 /etc/init.d/openclash stop || true
