@@ -6,7 +6,7 @@ echo "🪐 开始 OpenClash 一键部署..."
 echo "🔧 安装依赖..."
 opkg update || true
 opkg install python3 python3-pip wget unzip kmod-fs-cifs ksmbd-server ksmbd-tools luci-app-ksmbd || true
-pip3 install pyyaml || true
+pip3 install pyyaml ruamel.yaml || true
 
 # 2. 下载并解压 OpenClashManage
 echo "📦 下载并解压 OpenClashManage..."
